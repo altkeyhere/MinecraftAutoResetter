@@ -6,7 +6,7 @@ from Trackers import LogsTracker
 import tkinter.filedialog as tkFileDialog
 import os
 
-arVersion = "v1.0"
+arVersion = "v1.0.1"
 
 
 def resource_path(relative_path):
@@ -108,7 +108,12 @@ class AutoResetApp(tk.Tk):
             self.version = settings[1]
 
     def startListening(self):
-        self.logsTracker.listenUntilMainMenu(-1, self.menuLoad)
+        self.logsTracker.cancel()
+        self.logsTracker.listenUntilExit(-1,self.waitForMenu)
+    
+    def waitForMenu(self):
+        self.logsTracker.cancel()
+        self.logsTracker.listenUntilMainMenu(-1,self.menuLoad)
 
     def refreshLT(self):
         if self.logsTracker is not None:
@@ -119,7 +124,7 @@ class AutoResetApp(tk.Tk):
     def menuLoad(self):
         while not WindowChecker.checkMainMenu() and not keyboard.is_pressed("esc"):
             time.sleep(0.1)
-        if not keyboard.is_pressed("esc"):
+        if (not keyboard.is_pressed("esc")) and (not WindowChecker.checkInGame()):
             self.runMacro()
         self.startListening()
 
@@ -167,6 +172,17 @@ class WindowChecker:
             for i in ["multiplayer", "singleplayer", "realm"]:
                 if i in window:
                     value = False
+                    break
+        return value
+
+    @staticmethod
+    def checkInGame():
+        value = not WindowChecker.checkMinecraft()
+        if not value:
+            window = GetWindowText(GetForegroundWindow()).lower()
+            for i in ["multiplayer", "singleplayer", "realm"]:
+                if i in window:
+                    value = True
                     break
         return value
 
