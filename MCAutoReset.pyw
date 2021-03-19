@@ -6,7 +6,7 @@ from Trackers import LogsTracker
 import tkinter.filedialog as tkFileDialog
 import os
 
-arVersion = "v1.0.1"
+arVersion = "v1.0.2"
 
 
 def resource_path(relative_path):
@@ -137,11 +137,11 @@ class AutoResetApp(tk.Tk):
         if WindowChecker.checkMainMenu():
             steps = ""
             if self.version == "1.16":
-                steps = "etstttsttsssttttts"
+                steps = "etswtttsttsssttttts"
             elif self.version == "1.14/1.15":
-                steps = "etsttttstttts"
+                steps = "etswttttstttts"
             elif self.version == "1.14/1.15 HC":
-                steps = "etsttttsttstts"
+                steps = "etswttttsttstts"
             for i in steps:
                 if i == "t":
                     keyboard.press_and_release("tab")
@@ -151,6 +151,8 @@ class AutoResetApp(tk.Tk):
                     time.sleep(0.05)
                 elif i == "e":
                     keyboard.press_and_release("esc")
+                elif i == "w":
+                    time.sleep(0.1)
 
 
 class WindowChecker:
