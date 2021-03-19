@@ -6,7 +6,7 @@ from Trackers import LogsTracker
 import tkinter.filedialog as tkFileDialog
 import os
 
-arVersion = "v1.0.2"
+arVersion = "v1.0.3"
 
 
 def resource_path(relative_path):
@@ -84,9 +84,9 @@ class AutoResetApp(tk.Tk):
             self.path = x.replace("\\", "/")
             if self.path.split("/")[-1] != "logs":
                 self.path = os.path.join(self.path, "logs").replace("\\", "/")
-                self.dirLabel.config(text=self.path.replace(" ", " "))
-                self.save()
-                self.refreshLT()
+            self.dirLabel.config(text=self.path.replace(" ", " "))
+            self.save()
+            self.refreshLT()
 
     def optionsInit(self):
         self.oPath = os.path.expanduser(
