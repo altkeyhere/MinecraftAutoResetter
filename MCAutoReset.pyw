@@ -6,7 +6,7 @@ import tkinter.filedialog as tkFileDialog
 import os
 import shutil
 
-arVersion = "v1.1.0"
+arVersion = "v1.1.2"
 
 
 def resource_path(relative_path):
@@ -115,8 +115,6 @@ class AutoResetApp(tk.Tk):
                                     print(
                                         "World saved, running macro and waiting for world exit.")
                                     self.state = 0
-                                    if self.worldDeletion:
-                                        self.deleteWorlds()
                                     self.runMacro()
                         self.logLastLine = newLastLine
                     logFile.close()
@@ -205,7 +203,7 @@ class AutoResetApp(tk.Tk):
             elif self.version == "1.14/1.15 HC":
                 steps = "etswttttsttstts"
             for i in steps:
-                if keyboard.is_pressed("esc"):
+                if keyboard.is_pressed("\x1b"):
                     print("Macro Canceled")
                     return
                 if i == "t":
@@ -218,6 +216,8 @@ class AutoResetApp(tk.Tk):
                     keyboard.press_and_release("\x1b")
                 elif i == "w":
                     time.sleep(0.1)
+        if self.worldDeletion:
+            self.deleteWorlds()
 
 
 class WindowChecker:
