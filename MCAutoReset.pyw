@@ -6,7 +6,7 @@ import tkinter.filedialog as tkFileDialog
 import os
 import shutil
 
-arVersion = "v1.1.2"
+arVersion = "v1.1.5"
 
 
 def resource_path(relative_path):
@@ -106,12 +106,24 @@ class AutoResetApp(tk.Tk):
                     newLastLine = len(lines)
                     if newLastLine != self.logLastLine:
                         for line in lines[self.logLastLine:]:
+                            print(line.rstrip())
                             if self.state == 0:
                                 if "Stopping singleplayer server as player logged out" in line:
                                     print("Waiting for world to save.")
                                     self.state = 1
+                                    self.saveChecks = [False,False,False]
                             elif self.state == 1:
-                                if "Stopping worker threads" in line:
+                                if "Saving chunks for level" in line and "/minecraft:overworld" in line:
+                                    self.saveChecks[0] = True
+                                elif "Saving chunks for level" in line and "/minecraft:the_nether" in line:
+                                    self.saveChecks[1] = True
+                                elif "Saving chunks for level" in line and "/minecraft:the_end" in line:
+                                    self.saveChecks[2] = True
+
+                                if self.saveChecks.count(True) == 3:
+                                    self.state = 2
+                            elif self.state == 2:
+                                if "): All chunks are saved" in line and "ThreadedAnvilChunkStorage" in line:
                                     print(
                                         "World saved, running macro and waiting for world exit.")
                                     self.state = 0
