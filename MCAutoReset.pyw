@@ -6,7 +6,7 @@ import tkinter.filedialog as tkFileDialog
 import os
 import shutil
 
-arVersion = "v1.1.5"
+arVersion = "v1.1.7"
 
 
 def resource_path(relative_path):
@@ -111,7 +111,7 @@ class AutoResetApp(tk.Tk):
                                 if "Stopping singleplayer server as player logged out" in line:
                                     print("Waiting for world to save.")
                                     self.state = 1
-                                    self.saveChecks = [False,False,False]
+                                    self.saveChecks = [False, False, False]
                             elif self.state == 1:
                                 if "Saving chunks for level" in line and "/minecraft:overworld" in line:
                                     self.saveChecks[0] = True
@@ -122,11 +122,23 @@ class AutoResetApp(tk.Tk):
 
                                 if self.saveChecks.count(True) == 3:
                                     self.state = 2
+                                    self.chunkSaves = 0
                             elif self.state == 2:
                                 if "): All chunks are saved" in line and "ThreadedAnvilChunkStorage" in line:
+                                    self.chunkSaves += 1
+                                    if self.chunkSaves == 4:
+                                        self.state = 3
+                                        self.wfwttsTime = time.time()  # I'm not telling you what this stands for
+                            elif self.state == 3:
+                                if "Stopping worker threads" in line:
+                                    self.state = 0
                                     print(
                                         "World saved, running macro and waiting for world exit.")
+                                    self.runMacro()
+                                elif time.time() - self.wfwttsTime < 0.5:
                                     self.state = 0
+                                    print(
+                                        "World saved, running macro and waiting for world exit.")
                                     self.runMacro()
                         self.logLastLine = newLastLine
                     logFile.close()
@@ -282,32 +294,32 @@ class SafetyManager(tk.Toplevel):
         tk.Label(self.worldFrame, text="World Name:").grid(row=0, column=0)
         self.entry = tk.Entry(self.worldFrame, width=30)
         self.entry.grid(row=0, column=1)
-        tk.Button(self.worldFrame,text="AutoFill",command=self.autocomplete).grid(row=0,column=2)
+        tk.Button(self.worldFrame, text="AutoFill",
+                  command=self.autocomplete).grid(row=0, column=2)
 
         self.buttonFrame = tk.Frame(self)
         self.buttonFrame.grid(row=1, column=0)
 
         tk.Button(self.buttonFrame, command=self.add,
-                  text="Add Safety").grid(row=0, column=0,padx=5)
+                  text="Add Safety").grid(row=0, column=0, padx=5)
         tk.Button(self.buttonFrame, command=self.remove,
-                  text="Remove Safety").grid(row=0, column=1,padx=5)
+                  text="Remove Safety").grid(row=0, column=1, padx=5)
 
         self.response = tk.Label(self)
         self.response.grid(row=2, column=0, padx=5, pady=5)
-    
+
     def autocomplete(self):
         words = [i.lower() for i in self.entry.get().rstrip().split()]
-        for world in os.listdir(os.path.join(self.parent.path,"saves")):
+        for world in os.listdir(os.path.join(self.parent.path, "saves")):
             success = True
             for word in words:
                 if word not in world.lower():
                     success = False
                     break
             if success:
-                self.entry.delete(0,'end')
-                self.entry.insert(0,world)
+                self.entry.delete(0, 'end')
+                self.entry.insert(0, world)
                 break
-            
 
     def getEnter(self):
         entry = self.entry.get().rstrip()
