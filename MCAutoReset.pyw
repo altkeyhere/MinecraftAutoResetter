@@ -5,8 +5,9 @@ from win32.win32gui import GetWindowText, GetForegroundWindow
 import tkinter.filedialog as tkFileDialog
 import os
 import shutil
+import traceback
 
-arVersion = "v1.1.7"
+arVersion = "v1.1.9"
 
 
 def resource_path(relative_path):
@@ -83,6 +84,15 @@ class AutoResetApp(tk.Tk):
             self.safetyManager = SafetyManager(self)
 
     def loop(self):
+        try:
+            self.loopProcess()
+        except:
+            print("ERROR FOUND BELOW, PROBABLY TELL DUNCAN ABOUT THIS")
+            traceback.print_exc()
+
+        self.after(50, self.loop)
+
+    def loopProcess(self):
         if self.worldDeletion != self.worldVar.get():
             self.worldDeletion = self.worldVar.get()
             self.save()
@@ -101,51 +111,51 @@ class AutoResetApp(tk.Tk):
 
                 self.logMTime = newMTime
 
-                with open(self.logPath, "r") as logFile:
-                    lines = logFile.readlines()
-                    newLastLine = len(lines)
-                    if newLastLine != self.logLastLine:
-                        for line in lines[self.logLastLine:]:
-                            print(line.rstrip())
-                            if self.state == 0:
-                                if "Stopping singleplayer server as player logged out" in line:
-                                    print("Waiting for world to save.")
-                                    self.state = 1
-                                    self.saveChecks = [False, False, False]
-                            elif self.state == 1:
-                                if "Saving chunks for level" in line and "/minecraft:overworld" in line:
-                                    self.saveChecks[0] = True
-                                elif "Saving chunks for level" in line and "/minecraft:the_nether" in line:
-                                    self.saveChecks[1] = True
-                                elif "Saving chunks for level" in line and "/minecraft:the_end" in line:
-                                    self.saveChecks[2] = True
+                if self.state != -1:
+                    with open(self.logPath, "r") as logFile:
+                        lines = logFile.readlines()
+                        newLastLine = len(lines)
+                        if newLastLine != self.logLastLine:
+                            for line in lines[self.logLastLine:]:
+                                print(line.rstrip(), "- State:", self.state)
+                                if self.state == 0:
+                                    if "Stopping singleplayer server as player logged out" in line:
+                                        print("Waiting for world to save.")
+                                        self.state = 1
+                                        self.saveChecks = [False, False, False]
+                                elif self.state == 1:
+                                    if "Saving chunks for level" in line and "/minecraft:overworld" in line:
+                                        self.saveChecks[0] = True
+                                    elif "Saving chunks for level" in line and "/minecraft:the_nether" in line:
+                                        self.saveChecks[1] = True
+                                    elif "Saving chunks for level" in line and "/minecraft:the_end" in line:
+                                        self.saveChecks[2] = True
 
-                                if self.saveChecks.count(True) == 3:
-                                    self.state = 2
-                                    self.chunkSaves = 0
-                            elif self.state == 2:
-                                if "): All chunks are saved" in line and "ThreadedAnvilChunkStorage" in line:
-                                    self.chunkSaves += 1
-                                    if self.chunkSaves == 4:
-                                        self.state = 3
-                                        self.wfwttsTime = time.time()  # I'm not telling you what this stands for
-                            elif self.state == 3:
-                                if "Stopping worker threads" in line:
-                                    self.state = 0
-                                    print(
-                                        "World saved, running macro and waiting for world exit.")
-                                    self.runMacro()
-                                elif time.time() - self.wfwttsTime < 0.5:
-                                    self.state = 0
-                                    print(
-                                        "World saved, running macro and waiting for world exit.")
-                                    self.runMacro()
-                        self.logLastLine = newLastLine
-                    logFile.close()
+                                    if self.saveChecks.count(True) == 3:
+                                        self.state = 2
+                                        self.chunkSaves = 0
+                                elif self.state == 2:
+                                    if "): All chunks are saved" in line and "ThreadedAnvilChunkStorage" in line:
+                                        self.chunkSaves += 1
+                                        if self.chunkSaves == 4:
+                                            self.state = 3
+                                            self.wfwttsTime = time.time()  # I'm not telling you what this stands for
+                                elif self.state == 3:
+                                    if "Stopping worker threads" in line:
+                                        self.state = 0
+                                        print(
+                                            "World saved, running macro and waiting for world exit.")
+                                        self.runMacro()
+                                    elif abs(time.time() - self.wfwttsTime) > 0.3:
+                                        self.state = 0
+                                        print(
+                                            "World saved, running macro and waiting for world exit.")
+                                        self.runMacro()
+                            self.logLastLine = newLastLine
+                        logFile.close()
 
         if self.state == -1:
             self.state = 0
-        self.after(50, self.loop)
 
     def set116(self):
         self.version = "1.16"
