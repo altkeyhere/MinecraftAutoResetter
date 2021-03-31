@@ -7,7 +7,7 @@ import os
 import shutil
 import traceback
 
-arVersion = "v1.1.9"
+arVersion = "v1.1.10"
 
 
 def resource_path(relative_path):
@@ -107,6 +107,13 @@ class AutoResetApp(tk.Tk):
         if os.path.isfile(self.logPath):
 
             newMTime = os.path.getmtime(self.logPath)
+
+            if self.state == 3 and abs(time.time() - self.wfwttsTime) > 0.5:
+                self.state = 0
+                print(
+                    "World saved, running macro and waiting for world exit.")
+                self.runMacro()
+
             if newMTime != self.logMTime:
 
                 self.logMTime = newMTime
@@ -142,11 +149,6 @@ class AutoResetApp(tk.Tk):
                                             self.wfwttsTime = time.time()  # I'm not telling you what this stands for
                                 elif self.state == 3:
                                     if "Stopping worker threads" in line:
-                                        self.state = 0
-                                        print(
-                                            "World saved, running macro and waiting for world exit.")
-                                        self.runMacro()
-                                    elif abs(time.time() - self.wfwttsTime) > 0.3:
                                         self.state = 0
                                         print(
                                             "World saved, running macro and waiting for world exit.")
