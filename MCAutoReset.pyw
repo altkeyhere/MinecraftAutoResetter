@@ -7,7 +7,7 @@ import os
 import shutil
 import traceback
 
-arVersion = "v1.1.10"
+arVersion = "v1.1.11"
 
 
 def resource_path(relative_path):
@@ -239,7 +239,7 @@ class AutoResetApp(tk.Tk):
             elif self.version == "1.14/1.15 HC":
                 steps = "etswttttsttstts"
             for i in steps:
-                if keyboard.is_pressed("\x1b"):
+                if keyboard.is_pressed("\x1b") or keyboard.is_pressed("\t") or keyboard.is_pressed(" "):
                     print("Macro Canceled")
                     return
                 if i == "t":
