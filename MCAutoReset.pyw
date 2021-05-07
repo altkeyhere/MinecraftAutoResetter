@@ -6,8 +6,9 @@ import tkinter.filedialog as tkFileDialog
 import os
 import shutil
 import traceback
+from Entry import *
 
-arVersion = "v1.1.11"
+arVersion = "v1.3.0"
 
 
 def resource_path(relative_path):
@@ -36,7 +37,7 @@ class AutoResetApp(tk.Tk):
         self.optionsFrame.grid(row=1, column=0)
 
         self.directFrame = tk.LabelFrame(self.optionsFrame)
-        self.directFrame.grid(row=0, column=0, padx=5, pady=5, sticky="n")
+        self.directFrame.grid(row=0, column=0, padx=5, pady=5, sticky="nw")
 
         tk.Label(self.directFrame, text=".minecraft Directory:").grid(
             row=0, column=0, padx=5, pady=5)
@@ -47,7 +48,7 @@ class AutoResetApp(tk.Tk):
                   text="Change Directory").grid(row=2, column=0, padx=5, pady=5)
 
         self.macroFrame = tk.LabelFrame(self.optionsFrame)
-        self.macroFrame.grid(row=0, column=1, padx=5, pady=5, sticky="n")
+        self.macroFrame.grid(row=0, column=1, padx=5, pady=5, sticky="nw")
 
         tk.Label(self.macroFrame, text="Current Macro:").grid(
             row=0, column=0, padx=5, pady=5)
@@ -63,9 +64,11 @@ class AutoResetApp(tk.Tk):
                   command=self.set114, width=10).grid(row=1, column=0)
         tk.Button(self.macroButtonFrame, text="1.14/1.15 HC",
                   command=self.set114HC, width=10).grid(row=2, column=0)
+        tk.Button(self.macroButtonFrame, text="SRG",
+                  command=self.setSRG, width=10).grid(row=3, column=0)
 
         self.worldFrame = tk.LabelFrame(self.optionsFrame)
-        self.worldFrame.grid(row=0, column=2, padx=5, pady=5)
+        self.worldFrame.grid(row=0, column=2, padx=5, pady=5,sticky="nw")
 
         tk.Label(self.worldFrame, text="World Deletion:").grid(
             row=0, column=0, padx=5, pady=5)
@@ -76,8 +79,35 @@ class AutoResetApp(tk.Tk):
         tk.Button(self.worldFrame, command=self.openSafetyManager,
                   text="Manage Safe\nWorlds").grid(row=2, column=0, padx=5, pady=5)
 
+        
+
+        self.delayFrame = tk.LabelFrame(self.optionsFrame)
+        self.delayFrame.grid(row=1, column=1, padx=5, pady=5,sticky="n")
+
+        tk.Label(self.delayFrame, text="Delay after\nleaving world:").grid(
+            row=0, column=0, padx=5, pady=5)
+
+        self.delayEntryFrame = tk.Frame(self.delayFrame)
+        self.delayEntryFrame.grid(row=1,column=0,padx=5,pady=5)
+
+        self.delayEntry = FloatEntry(self.delayEntryFrame)
+        self.delayEntry.config(width=8)
+        self.delayEntry.insert(0,str(self.maxDelay))
+        self.delayEntry.grid(row=0,column=0)
+
+        tk.Button(self.delayEntryFrame,text="Set",command=self.setMaxDelay).grid(row=0,column=1)        
+
         self.oldPath = ""
         self.after(0, self.loop)
+    
+    def setMaxDelay(self,x=0):
+        try:
+            self.maxDelay = float(self.delayEntry.get())
+        except:
+            self.maxDelay = 0
+            self.delayEntry.delete(0,-1)
+            self.delayEntry.insert(0,"0")
+        self.save()
 
     def openSafetyManager(self, x=0):
         if self.safetyManager is None:
@@ -108,7 +138,7 @@ class AutoResetApp(tk.Tk):
 
             newMTime = os.path.getmtime(self.logPath)
 
-            if self.state == 3 and abs(time.time() - self.wfwttsTime) > 0.5:
+            if self.state == 3 and abs(time.time() - self.wfwttsTime) > self.maxDelay:
                 self.state = 0
                 print(
                     "World saved, running macro and waiting for world exit.")
@@ -161,6 +191,11 @@ class AutoResetApp(tk.Tk):
 
     def set116(self):
         self.version = "1.16"
+        self.macroLabel.config(text=self.version)
+        self.save()
+
+    def setSRG(self):
+        self.version = "SRG"
         self.macroLabel.config(text=self.version)
         self.save()
 
@@ -222,11 +257,16 @@ class AutoResetApp(tk.Tk):
                 self.worldDeletion = False
             else:
                 self.worldDeletion = True if settings[2] == "World Deletion = On" else False
+            
+            if len(settings) < 4:
+                self.maxDelay = .5
+            else:
+                self.maxDelay = float(settings[3])
 
     def save(self):
         with open(self.ofPath, "w+") as oFile:
             oFile.write(self.path+"\n"+self.version+"\n" +
-                        ("World Deletion = On" if self.worldVar.get() else "World Deletion = Off"))
+                        ("World Deletion = On" if self.worldVar.get() else "World Deletion = Off")+"\n"+str(self.maxDelay))
 
     def runMacro(self):
         time.sleep(0.1)
@@ -238,6 +278,8 @@ class AutoResetApp(tk.Tk):
                 steps = "etswttttstttts"
             elif self.version == "1.14/1.15 HC":
                 steps = "etswttttsttstts"
+            elif self.version == "SRG":
+                steps = "etswtttstsstsssttttts"
             for i in steps:
                 if keyboard.is_pressed("\x1b") or keyboard.is_pressed("\t") or keyboard.is_pressed(" "):
                     print("Macro Canceled")
