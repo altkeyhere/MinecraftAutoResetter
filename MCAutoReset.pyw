@@ -8,7 +8,7 @@ import shutil
 import traceback
 from Entry import *
 
-arVersion = "v1.3.0"
+arVersion = "v1.3.1"
 
 
 def resource_path(relative_path):
@@ -205,8 +205,8 @@ class AutoResetApp(tk.Tk):
             savesPath, i, "level.dat")) and not os.path.isfile(os.path.join(savesPath, i, "Reset Safe.txt")))]
         worlds.sort(reverse=True, key=lambda x: os.path.getmtime(
             os.path.join(savesPath, x)))
-        if len(worlds) > 5:
-            for world in worlds[5:]:
+        if len(worlds) > 6:
+            for world in worlds[6:]:
                 shutil.rmtree(os.path.join(savesPath, world))
 
     def set114(self):
