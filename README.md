@@ -3,7 +3,7 @@ Automatically makes a new minecraft world upon leaving one.
 
 This program is meant to be used for minecraft speedrunning in modern versions.
 
-![image](https://user-images.githubusercontent.com/59705125/112229454-c1e0cd00-8c11-11eb-920e-f790ce4cf296.png)
+![image](https://user-images.githubusercontent.com/59705125/122108117-359a0c80-cdf2-11eb-92c7-f7d70151665d.png)
 
 ## Features
 
@@ -15,6 +15,7 @@ Multiple different macro options:
 - 1.16
 - 1.14/1.15
 - 1.14/1.15 Hardcore (this one is for that korbanoes guy)
+- SRG (Used for 1.16, starts every world in creative)
 
 ### World Deletion
 
