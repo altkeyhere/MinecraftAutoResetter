@@ -7,8 +7,9 @@ import os
 import shutil
 import traceback
 from Entry import *
+from datetime import datetime
 
-arVersion = "v1.3.1"
+arVersion = "v1.3.2"
 
 
 def resource_path(relative_path):
@@ -273,13 +274,13 @@ class AutoResetApp(tk.Tk):
         if WindowChecker.checkMainMenu():
             steps = ""
             if self.version == "1.16":
-                steps = "etswtttsttsssttttts"
+                steps = "etswtttsnttsssttttts"
             elif self.version == "1.14/1.15":
-                steps = "etswttttstttts"
+                steps = "etswttttstnttts"
             elif self.version == "1.14/1.15 HC":
-                steps = "etswttttsttstts"
+                steps = "etswttttstntstts"
             elif self.version == "SRG":
-                steps = "etswtttstsstsssttttts"
+                steps = "etswtttsntsstsssttttts"
             for i in steps:
                 if keyboard.is_pressed("\x1b") or keyboard.is_pressed("\t") or keyboard.is_pressed(" "):
                     print("Macro Canceled")
@@ -294,6 +295,9 @@ class AutoResetApp(tk.Tk):
                     keyboard.press_and_release("\x1b")
                 elif i == "w":
                     time.sleep(0.1)
+                elif i == "n":
+                    keyboard.press_and_release("ctrl+a")
+                    keyboard.write(datetime.now().strftime("Speedrun %H:%M:%S"))
         if self.worldDeletion:
             self.deleteWorlds()
 
