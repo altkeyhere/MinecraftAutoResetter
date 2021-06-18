@@ -3,13 +3,14 @@ import tkinter as tk
 import time
 from win32.win32gui import GetWindowText, GetForegroundWindow
 import tkinter.filedialog as tkFileDialog
+import tkinter.simpledialog as tkSimpleDialog
 import os
 import shutil
 import traceback
 from Entry import *
 from datetime import datetime
 
-arVersion = "v1.3.2"
+arVersion = "v1.4.0"
 
 
 def resource_path(relative_path):
@@ -59,17 +60,19 @@ class AutoResetApp(tk.Tk):
         self.macroButtonFrame = tk.Frame(self.macroFrame)
         self.macroButtonFrame.grid(row=2, column=0, padx=5, pady=5)
 
-        tk.Button(self.macroButtonFrame, text="1.16",
+        tk.Button(self.macroButtonFrame, text="1.16+",
                   command=self.set116, width=10).grid(row=0, column=0)
+        tk.Button(self.macroButtonFrame, text="1.16+ SSG",
+                  command=self.setSSG, width=10).grid(row=1, column=0)
+        tk.Button(self.macroButtonFrame, text="1.16+ SRG",
+                  command=self.setSRG, width=10).grid(row=2, column=0)
         tk.Button(self.macroButtonFrame, text="1.14/1.15",
-                  command=self.set114, width=10).grid(row=1, column=0)
+                  command=self.set114, width=10).grid(row=3, column=0)
         tk.Button(self.macroButtonFrame, text="1.14/1.15 HC",
-                  command=self.set114HC, width=10).grid(row=2, column=0)
-        tk.Button(self.macroButtonFrame, text="SRG",
-                  command=self.setSRG, width=10).grid(row=3, column=0)
+                  command=self.set114HC, width=10).grid(row=4, column=0)
 
         self.worldFrame = tk.LabelFrame(self.optionsFrame)
-        self.worldFrame.grid(row=0, column=2, padx=5, pady=5,sticky="nw")
+        self.worldFrame.grid(row=0, column=2, padx=5, pady=5, sticky="nw")
 
         tk.Label(self.worldFrame, text="World Deletion:").grid(
             row=0, column=0, padx=5, pady=5)
@@ -80,34 +83,33 @@ class AutoResetApp(tk.Tk):
         tk.Button(self.worldFrame, command=self.openSafetyManager,
                   text="Manage Safe\nWorlds").grid(row=2, column=0, padx=5, pady=5)
 
-        
-
         self.delayFrame = tk.LabelFrame(self.optionsFrame)
-        self.delayFrame.grid(row=1, column=1, padx=5, pady=5,sticky="n")
+        self.delayFrame.grid(row=1, column=1, padx=5, pady=5, sticky="n")
 
         tk.Label(self.delayFrame, text="Delay after\nleaving world:").grid(
             row=0, column=0, padx=5, pady=5)
 
         self.delayEntryFrame = tk.Frame(self.delayFrame)
-        self.delayEntryFrame.grid(row=1,column=0,padx=5,pady=5)
+        self.delayEntryFrame.grid(row=1, column=0, padx=5, pady=5)
 
         self.delayEntry = FloatEntry(self.delayEntryFrame)
         self.delayEntry.config(width=8)
-        self.delayEntry.insert(0,str(self.maxDelay))
-        self.delayEntry.grid(row=0,column=0)
+        self.delayEntry.insert(0, str(self.maxDelay))
+        self.delayEntry.grid(row=0, column=0)
 
-        tk.Button(self.delayEntryFrame,text="Set",command=self.setMaxDelay).grid(row=0,column=1)        
+        tk.Button(self.delayEntryFrame, text="Set",
+                  command=self.setMaxDelay).grid(row=0, column=1)
 
         self.oldPath = ""
         self.after(0, self.loop)
-    
-    def setMaxDelay(self,x=0):
+
+    def setMaxDelay(self, x=0):
         try:
             self.maxDelay = float(self.delayEntry.get())
         except:
             self.maxDelay = 0
-            self.delayEntry.delete(0,-1)
-            self.delayEntry.insert(0,"0")
+            self.delayEntry.delete(0, -1)
+            self.delayEntry.insert(0, "0")
         self.save()
 
     def openSafetyManager(self, x=0):
@@ -220,6 +222,38 @@ class AutoResetApp(tk.Tk):
         self.macroLabel.config(text=self.version)
         self.save()
 
+    def setSSG(self):
+        self.version = "SSG"
+        self.macroLabel.config(text=self.version)
+        self.save()
+        self.setSeed()
+
+    def setSeed(self):
+        seed = self.askSeed()
+        if seed is not None:
+            with open(self.seedPath, "w+") as seedFile:
+                seedFile.write(seed)
+                seedFile.close()
+
+    def askSeed(self):
+        currentSeed = self.getSeed()
+        ans = tkSimpleDialog.askstring("AutoReset SSG", "What is the seed you would like to play?"+(
+            "\nPress cancel to keep seed: "+currentSeed if currentSeed != "" else ""))
+
+        if type(ans) != type(""):
+            return None
+        else:
+            return ans.rstrip()
+
+    def getSeed(self):
+        try:
+            with open(self.seedPath, "r") as seedFile:
+                ans = seedFile.read().rstrip()
+                seedFile.close()
+            return ans
+        except:
+            return ""
+
     def setPathButton(self):
         x = tkFileDialog.askdirectory()
         if x is not None and x != "":
@@ -244,6 +278,7 @@ class AutoResetApp(tk.Tk):
             os.mkdir(self.oPath)
 
         self.ofPath = os.path.join(self.oPath, "settings.txt")
+        self.seedPath = os.path.join(self.oPath, "seed.txt")
 
         if not os.path.isfile(self.ofPath):
             with open(self.ofPath, "w+") as oFile:
@@ -258,7 +293,7 @@ class AutoResetApp(tk.Tk):
                 self.worldDeletion = False
             else:
                 self.worldDeletion = True if settings[2] == "World Deletion = On" else False
-            
+
             if len(settings) < 4:
                 self.maxDelay = .5
             else:
@@ -281,6 +316,8 @@ class AutoResetApp(tk.Tk):
                 steps = "etswttttstntstts"
             elif self.version == "SRG":
                 steps = "etswtttsntsstsssttttts"
+            elif self.version == "SSG":
+                steps = "tstttsnttsssttttstttvtttttts"
             for i in steps:
                 if keyboard.is_pressed("\x1b") or keyboard.is_pressed("\t") or keyboard.is_pressed(" "):
                     print("Macro Canceled")
@@ -297,7 +334,11 @@ class AutoResetApp(tk.Tk):
                     time.sleep(0.1)
                 elif i == "n":
                     keyboard.press_and_release("ctrl+a")
-                    keyboard.write(datetime.now().strftime("Speedrun %H:%M:%S"))
+                    keyboard.write(
+                        datetime.now().strftime("Speedrun %H:%M:%S"))
+                elif i == "v":
+                    keyboard.write(self.getSeed())
+                    time.sleep(0.01)
         if self.worldDeletion:
             self.deleteWorlds()
 
